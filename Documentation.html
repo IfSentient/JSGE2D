@@ -1,0 +1,40 @@
+<html>
+	<head>
+		<title>Documentation</title>
+		<style type="text/css">
+			.item {
+				display: block;
+				border: 1px solid #000000;
+				padding: 5px;
+				margin: 5px;
+			}
+			
+			.item_header {
+				cursor: pointer;
+			}
+			
+			.item_content {
+				display: none;
+			}
+		</style>
+		<script type="text/javascript" >
+			function showHideItem(itemID) {
+				var item = document.getElementById(itemID);
+				if(item.style.display != 'block') item.style.display = 'block';
+				else item.style.display = 'none';
+			}
+		</script>
+	</head>
+	<body>
+		<div id="index">
+		
+		</div>
+		
+		<div class="group">
+			<div class="item">
+				<div class="item_header" onclick="showHideItem('scene');">Scene</div>
+				<div class="item_content" id="scene">Stuff</div>
+			</div>
+		</div>
+	</body>
+</html>

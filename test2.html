@@ -1,0 +1,189 @@
+<html>
+	<head>
+		<title>Test</title>
+		<script type="text/javascript" src="Common.js"></script>
+		<script type="text/javascript" src="Sprite.js"></script>
+		<script type="text/javascript" src="TileSet.js"></script>
+		<script type="text/javascript" src="CollisionBlock.js"></script>
+		<script type="text/javascript" src="SceneObject.js"></script>
+		<script type="text/javascript" src="SceneObserver.js"></script>
+		<script type="text/javascript" src="CollisionObserver.js"></script>
+		<script type="text/javascript" src="Scene.js"></script>
+		<script type="text/javascript" src="PhysicsObject.js"></script>
+		<script type="text/javascript" src="TileObject.js"></script>
+		<script type="text/javascript" src="Actor.js"></script>
+		<script type="text/javascript" src="Controller.js"></script>
+	</head>
+	<body style="margin: 0px; padding: 0px; scrolling: none;">
+		<canvas id="canvas" width="500" height="500"></canvas>
+		<script type="text/javascript" >
+			//Initializing the canvas
+			var canvas = document.getElementById("canvas");
+			var context = canvas.getContext("2d");
+			
+			//Canvas dimensions
+			var W = window.innerWidth; 
+			var H = window.innerHeight;
+			
+			canvas.style.width = W;
+			canvas.style.height = H;
+			context.canvas.width = W;
+			context.canvas.height = H;
+			
+			var spr = new Sprite({
+				src:'Test Resources/triceratops.png',
+			});
+			spr.addAnimation({
+				name : 'WalkLeft',
+				startX : 0,
+				startY : 0,
+				width : 78,
+				height : 40,
+				padding : 0,
+				frames : 8,
+				speed : 3
+			});
+			spr.addAnimation({
+				name : 'WalkRight',
+				startX : 0,
+				startY : 40,
+				width : 78,
+				height : 40,
+				padding : 0,
+				frames : 8,
+				speed : 3
+			});
+			spr.setState({state : 'WalkLeft'});
+			spr.pauseAnimation();
+			
+			var c = new CollisionBlock({
+				width: 31,
+				height: 20,
+				matrix: [[0],[1]]
+			});
+			
+			var a = new Actor({
+				x: 10,
+				y: 70,
+				z: 0,
+				sprite: spr,
+				collisionBlock: c
+			});
+			
+			a.addState({
+				name: 'StartWalkLeft',
+				sprite: {state:'WalkLeft'},
+				xAcceleration: -50
+			});
+			a.addState({
+				name: 'StartWalkRight',
+				sprite: {state:'WalkRight'},
+				xAcceleration: 50
+			});
+			a.addState({
+				name: 'WalkLeft',
+				sprite: {state:'WalkLeft'},
+			});
+			a.addState({
+				name: 'WalkRight',
+				sprite: {state:'WalkRight'},
+			});
+			a.addState({
+				name: 'StopWalkLeft',
+				xAcceleration: 50
+			});
+			a.addState({
+				name: 'StopWalkRight',
+				xAcceleration: -50
+			});
+			a.addState({
+				name: 'Still',
+				spritePause: true,
+				xVelocity: 0
+			});
+			a.setState('Still');
+			
+			var ts = new TileSet({
+				src: 'Test Resources/tileset.png',
+				tileWidth: 32,
+				tilesPerRow: 16,
+				rows: 10,
+				cols: 10
+			});
+			
+			ts.setLayer({
+				zIndex: 0,
+				layer:
+				[
+					[2,2,2,2,2,2,2,2,2,2],
+					[3,3,3,3,3,3,3,3,3,3],
+					[0,0,0,0,0,0,0,0,0,0],
+					[0,0,0,0,0,0,0,0,0,0],
+					[0,0,0,0,0,0,0,0,0,0],
+					[0,0,0,0,0,0,0,0,0,0],
+					[0,0,0,0,0,0,0,0,0,0],
+					[17,17,17,17,17,17,17,17,17,17,17],
+					[16,16,16,16,16,16,16,16,16,16,16]
+				]
+			});
+			
+			var scene = new Scene({
+				width: W,
+				height: H,
+				tileset: ts
+			});
+			
+			scene.addSceneObject(a);
+			
+			var walking_left = false;
+			var walking_right = false;
+			
+			function draw() {
+				scene.update({ms:33});
+				scene.draw({context:context});
+				//some state stuff for the Actor. This is because the Controller aspect isn't done yet
+				if(walking_left) {
+					if(a.getState() !== 'WalkLeft' && a.getState() !== 'StartWalkLeft') a.setState('StartWalkLeft');
+					if(a.getState() === 'StartWalkLeft' && a.x_vel < -20) a.setState('WalkLeft');
+				} else if(walking_right) {
+					if(a.getState() !== 'WalkRight' && a.getState() !== 'StartWalkRight') a.setState('StartWalkRight');
+					if(a.getState() === 'StartWalkRight' && a.x_vel > 20) a.setState('WalkRight');
+				} else {
+					if(a.getState() === 'WalkLeft' || a.getState() === 'StartWalkLeft') a.setState('StopWalkLeft');
+					if(a.getState() === 'WalkRight' || a.getState() === 'StartWalkRight') a.setState('StopWalkRight');
+					if(a.getState() === 'StopWalkLeft' && a.x_vel >= 0) { a.x_vel = 0; a.setState('Still'); }
+					if(a.getState() === 'StopWalkRight' && a.x_vel <= 0) { a.x_vel = 0; a.setState('Still'); }
+				}
+			}
+			
+			//draw();
+			window.setInterval(draw, 33);
+			
+			//Never do this. This is just because Ihaven't finished implementing this behaviour at this point
+			document.addEventListener('keydown', function(evt) { 
+				switch(evt.keyCode) {
+					case 65: //left
+						walking_left = true;
+						break;
+					case 68: //right
+						walking_right = true;
+						break;
+					default:
+						break;
+				}
+			});
+			document.addEventListener('keyup', function(evt) { 
+				switch(evt.keyCode) {
+					case 65: //left
+						walking_left = false;
+						break;
+					case 68: //right
+						walking_right = false;
+						break;
+					default:
+						break;
+				}
+			});
+		</script>
+	</body>
+</html>
