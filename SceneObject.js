@@ -7,7 +7,7 @@ var SceneObject = function(args) {
 	this.height = 0;
 	this.solid = false;
 	this.visible = false;
-	this.controller = undefined;
+	this.controllers = [];
 }
 
 SceneObject.prototype.onCollision = function(otherSceneObject) {
@@ -32,6 +32,7 @@ SceneObject.prototype.isOverlapping = function(sceneObject) {
 
 SceneObject.prototype.getCollisionBlock = function() { return undefined; }
 
-SceneObject.prototype.setController = function(c) {
-	this.controller = c;
+SceneObject.prototype.addController = function(controller) {
+	this.controllers[this.controllers.length] = controller;
+	controller.setSceneObject(this);
 }

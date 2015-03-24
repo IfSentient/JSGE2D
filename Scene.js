@@ -5,6 +5,7 @@ var Scene = function(args) {
 	if(!(this.tileset instanceof TileSet)) this.tileset = undefined;
 	this.scene_objects = [];
 	this.scene_observers = [];
+	this.bg_color = '#ffffff';
 };
 
 Scene.prototype.addSceneObject = function(sceneObject) {
@@ -21,6 +22,10 @@ Scene.prototype.addObserver = function(sceneObserver) {
 	this.scene_observers[this.scene_observers.length] = sceneObserver;
 }
 
+Scene.prototype.setBackgroundColor = function(color) {
+	this.bg_color = color;
+}
+
 Scene.prototype.update = function(args) {
 	for(var i=0; i<this.scene_objects.length; i++) { 
 		this.scene_objects[i].update(args);
@@ -35,13 +40,13 @@ Scene.prototype.draw = function(args) {
 	if(context === undefined) return;
 	
 	context.globalCompositeOperation = "source-over";
-	context.fillStyle = "#ffffff";
+	context.fillStyle = this.bg_color;
 	context.fillRect(0, 0, W, H);
 	
 	if(this.tileset !== undefined) {
 		for(var i=0; i<this.tileset.getZLayers().length; i++) {
 			for(var j=0; j<this.scene_objects.length; j++) if(this.scene_objects[j].z < this.tileset.getZLayers()[i]) this.scene_objects[j].draw({context:context});
-			this.tileset.drawLayer({zIndex:this.tileset.getZLayers()[i],context:context});
+			this.tileset.drawLayer({zIndex:this.tileset.getZLayers()[i],context:context,width:this.width,height:this.height});
 		}
 		for(var j=0; j<this.scene_objects.length; j++) if(this.scene_objects[j].z >= this.tileset.getZLayers()[this.tileset.getZLayers().length-1]) this.scene_objects[j].draw({context:context});
 	} else {

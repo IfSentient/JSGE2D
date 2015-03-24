@@ -60,7 +60,7 @@
 			
 			var c = new CollisionBlock({
 				width: 31,
-				height: 20,
+				height: 40,
 				matrix: [[0],[1]]
 			});
 			
@@ -68,6 +68,7 @@
 				x: 10,
 				y: 70,
 				z: 0,
+				yAcceleration: 30,
 				sprite: spr,
 				collisionBlock: c
 			});
@@ -103,29 +104,42 @@
 				spritePause: true,
 				xVelocity: 0
 			});
-			a.setState('Still');
+			a.addState({
+				name: 'Jump',
+				spritePause: true,
+				yVelocity: -50
+			});
+			a.addState({
+				name: 'FreeFall',
+				spritePause: true
+			});
+			a.setState('FreeFall');
 			
 			var ts = new TileSet({
 				src: 'Test Resources/tileset.png',
 				tileWidth: 32,
 				tilesPerRow: 16,
-				rows: 10,
-				cols: 10
+				rows: 13,
+				cols: 64
 			});
 			
 			ts.setLayer({
 				zIndex: 0,
 				layer:
 				[
-					[2,2,2,2,2,2,2,2,2,2],
-					[3,3,3,3,3,3,3,3,3,3],
-					[0,0,0,0,0,0,0,0,0,0],
-					[0,0,0,0,0,0,0,0,0,0],
-					[0,0,0,0,0,0,0,0,0,0],
-					[0,0,0,0,0,0,0,0,0,0],
-					[0,0,0,0,0,0,0,0,0,0],
-					[17,17,17,17,17,17,17,17,17,17,17],
-					[16,16,16,16,16,16,16,16,16,16,16]
+					[],
+					[],
+					[],
+					[],
+					[],
+					[],
+					[],
+					[],
+					[],
+					[],
+					[],
+					[1,1,1,1,1,1,1,1,1,1,8,8,1,1,1,1,1,1,1,1,1,1,8,8,1,1,1,1,1,1,1,1,1,1],
+					[2,2,2,2,2,2,2,2,2,2,8,8,2,2,2,2,2,2,2,2,2,2,8,8,2,2,2,2,2,2,2,2,2,2]
 				]
 			});
 			
@@ -141,18 +155,21 @@
 			//Really, one should extend the InputController class (or modify it) with their own movement state code in the update() function.
 			var movementStateFunction = function(args) {
 				var a = args.object;
-				if(args.stateObject.walking_left) {
-					if(a.getState() !== 'WalkLeft' && a.getState() !== 'StartWalkLeft') a.setState('StartWalkLeft');
-					if(a.getState() === 'StartWalkLeft' && a.x_vel < -20) a.setState('WalkLeft');
-				} else if(args.stateObject.walking_right) {
-					if(a.getState() !== 'WalkRight' && a.getState() !== 'StartWalkRight') a.setState('StartWalkRight');
-					if(a.getState() === 'StartWalkRight' && a.x_vel > 20) a.setState('WalkRight');
-				} else {
-					if(a.getState() === 'WalkLeft' || a.getState() === 'StartWalkLeft') a.setState('StopWalkLeft');
-					if(a.getState() === 'WalkRight' || a.getState() === 'StartWalkRight') a.setState('StopWalkRight');
-					if(a.getState() === 'StopWalkLeft' && a.x_vel >= 0) { a.x_vel = 0; a.setState('Still'); }
-					if(a.getState() === 'StopWalkRight' && a.x_vel <= 0) { a.x_vel = 0; a.setState('Still'); }
+				if(a.y_vel < 4 && a.y_vel > -4) { //if we're jumping or falling, we obviously can't actually walk anywhere or come to a stop
+					if(args.stateObject.walking_left) {
+						if(a.getState() !== 'WalkLeft' && a.getState() !== 'StartWalkLeft') a.setState('StartWalkLeft');
+						if(a.getState() === 'StartWalkLeft' && a.x_vel < -20) a.setState('WalkLeft');
+					} else if(args.stateObject.walking_right) {
+						if(a.getState() !== 'WalkRight' && a.getState() !== 'StartWalkRight') a.setState('StartWalkRight');
+						if(a.getState() === 'StartWalkRight' && a.x_vel > 20) a.setState('WalkRight');
+					} else {
+						if(a.getState() === 'WalkLeft' || a.getState() === 'StartWalkLeft') a.setState('StopWalkLeft');
+						if(a.getState() === 'WalkRight' || a.getState() === 'StartWalkRight') a.setState('StopWalkRight');
+						if(a.getState() === 'StopWalkLeft' && a.x_vel >= 0) { a.x_vel = 0; a.setState('Still'); }
+						if(a.getState() === 'StopWalkRight' && a.x_vel <= 0) { a.x_vel = 0; a.setState('Still'); }
+					}
 				}
+				if(a.getState() == 'Jump') a.setState('FreeFall');
 			}
 			
 			var ih = new InputHandler();
@@ -191,7 +208,64 @@
 					args.stateObject.update = movementStateFunction;
 				}
 			});
+			ic.addInputBinding({
+				type: 'keydown',
+				keyCode: 32,
+				action: function(args) {
+					var a = args.object;
+					if(a.getState() !== 'FreeFall' && a.getState() !== 'Jump') a.setState('Jump');
+					args.stateObject.update = movementStateFunction;
+				}
+			});
 			
+			var c2 = new CollisionBlock({
+				width: 320,
+				height: 32,
+				matrix: [[1]]
+			});
+			
+			var to1 = new TileObject({
+				x: 0,
+				y: 352,
+				z: 0,
+				collisionBlock: c2
+			});
+			var to2 = new TileObject({
+				x: 384,
+				y: 352,
+				z: 0,
+				collisionBlock: c2
+			});
+			var to3 = new TileObject({
+				x: 768,
+				y: 352,
+				z: 0,
+				collisionBlock: c2
+			});
+			scene.addSceneObject(to1);
+			scene.addSceneObject(to2);
+			scene.addSceneObject(to3);
+			
+			//In order for the Dino Actor to actually stop when it hits the floor, we need something to tell it that it hit the floor.
+			//For this, we use a CollisionObserver object and register all SceneObjects which may collide.
+			var observer = new CollisionObserver();
+			observer.registerObject(a);
+			observer.registerObject(to1);
+			observer.registerObject(to2);
+			observer.registerObject(to3);
+			scene.addObserver(observer);
+			
+			var OffscreenObserver = SceneObserver.extend();
+			OffscreenObserver.prototype.update = function(args) {
+				for(var i=0; i<this.scene_objects.length; i++) {
+					var so = this.scene_objects[i];
+					if(so.x < -2 * so.width || so.x > scene.width || so.y < 0 || so.y > scene.height) { so.setState('FreeFall'); so.x = 10; so.y = 10; so.x_acc = 0; so.x_vel = 0; so.y_vel = 0; }
+				}
+			}
+			
+			var oso = new OffscreenObserver();
+			oso.registerObject(a);
+			scene.addObserver(oso);
 			
 			function draw() {
 				scene.update({ms:33});

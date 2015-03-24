@@ -15,6 +15,20 @@
 			
 			.item_content {
 				display: none;
+				margin-top: 5px;
+				padding-top: 5px;
+				border-top: 1px solid #000000;
+			}
+			
+			.item_content .description {
+				
+			}
+			
+			.item_content .method {
+				margin-top: 5px;
+				padding: 5px;
+				background: #dddddd;
+				border: 1px solid #bbbbbb;
 			}
 		</style>
 		<script type="text/javascript" >
@@ -32,9 +46,22 @@
 		
 		<div class="group">
 			<div class="item">
-				<div class="item_header" onclick="showHideItem('scene');">Scene</div>
-				<div class="item_content" id="scene">Stuff</div>
+				<a name="Scene"></a>
+				<div class="item_header" onclick="showHideItem('Scene');">Scene</div>
+				<div class="item_content" id="Scene">
+					<div class="description">
+						A Scene is where everything in the game takes place. Think of a scene as a level in a game. Everything must take place within a level, but there can be multiple levels to a game.
+					</div>
+					<div class="method">
+						<b>Constructor:</b> new Scene(Object arguments)<br />
+						Object arguments may contain the following properties:<br />
+						<b>width</b> the width (in pixels) of the scene<br />
+						<b>height</b> the height (in pixels) of the scene<br />
+						<b>tileset</b> the TileSet object to use in the scene<br />
+					</div>
+				</div>
 			</div>
 		</div>
+		
 	</body>
 </html>

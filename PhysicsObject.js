@@ -45,6 +45,7 @@ PhysicsObject.prototype.update = function(args) {
 	this.x += this.x_vel * time_step;
 	this.y += this.y_vel * time_step;
 	this.last_time_step = time_step;
+	for(var i=0; i<this.controllers.length; i++) this.controllers[i].update(args);
 };
 
 PhysicsObject.prototype.getCollisionBlock = function() { return this.collision_block; }
@@ -60,14 +61,56 @@ PhysicsObject.prototype.isOverlapping = function(sceneObject) {
 
 PhysicsObject.prototype.onCollision = function(sceneObject) {
 	if(sceneObject.solid) {
-		var x_blocked = false;
-		var y_blocked = false;
+		var x_blocked = true;
+		var y_blocked = true;
 		this.x -= this.x_vel * this.last_time_step;
 		this.y -= this.y_vel * this.last_time_step;
 		var max_x = this.x_vel * this.last_time_step;
 		var max_y = this.y_vel * this.last_time_step;
 		/* TODO: implement move-around-obstacle behaviour */
-		this.x_vel = 0;
-		this.y_vel = 0;
+		this.x += max_x;
+		if(!this.isOverlapping(sceneObject)) x_blocked = false;
+		this.x -= max_x;
+		this.y += max_y;
+		if(!this.isOverlapping(sceneObject)) y_blocked = false;
+		this.y -= max_y;
+		
+		if(!x_blocked) this.x += max_x;
+		else {
+			if(max_x > 0) {
+				for(var i=max_x; i>0; i--) {
+					this.x += i;
+					if(!this.isOverlapping(sceneObject)) break;
+					this.x -= i;
+				}
+			}
+			else if(max_x < 0) {
+				for(var i=max_x; i<0; i++) {
+					this.x += i;
+					if(!this.isOverlapping(sceneObject)) break;
+					this.x -= i;
+				}
+			}
+		}
+		if(!y_blocked) this.y += max_y;
+		else {
+			if(max_y > 0) {
+				for(var i=max_y; i>0; i--) {
+					this.y += i;
+					if(!this.isOverlapping(sceneObject)) break;
+					this.y -= i;
+				}
+			}
+			else if(max_y < 0) {
+				for(var i=max_y; i<0; i++) {
+					this.y += i;
+					if(!this.isOverlapping(sceneObject)) break;
+					this.y -= i;
+				}
+			}
+		}
+		
+		if(x_blocked) this.x_vel = 0;
+		if(y_blocked) this.y_vel = 0;
 	}
 }
