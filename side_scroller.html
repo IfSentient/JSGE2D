@@ -59,9 +59,9 @@
 			spr.pauseAnimation();
 			
 			var c = new CollisionBlock({
-				width: 31,
-				height: 40,
-				matrix: [[0],[1]]
+				width: 78,
+				height: 37,
+				matrix: [[0],[0,1,1,0]]
 			});
 			
 			var a = new Actor({
@@ -266,6 +266,8 @@
 			var oso = new OffscreenObserver();
 			oso.registerObject(a);
 			scene.addObserver(oso);
+			
+			//scene.debug = true;
 			
 			function draw() {
 				scene.update({ms:33});

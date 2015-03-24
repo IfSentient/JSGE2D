@@ -56,5 +56,9 @@ Actor.prototype.draw = function(args) {
 	var y_offset = (args.yOffset !== undefined)? args.yOffset : 0;
 	if(context === undefined) return;
 	
+	if(args.debug) {
+		context.fillStyle = "#00ff00";
+		context.fillRect(this.x, this.y, this.collision_block.width, this.collision_block.height);
+	}
 	this.sprite.draw({'context':context,x:this.x-x_offset,y:this.y-y_offset});
 }

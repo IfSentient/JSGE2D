@@ -6,6 +6,7 @@ var Scene = function(args) {
 	this.scene_objects = [];
 	this.scene_observers = [];
 	this.bg_color = '#ffffff';
+	this.debug = false;
 };
 
 Scene.prototype.addSceneObject = function(sceneObject) {
@@ -45,13 +46,13 @@ Scene.prototype.draw = function(args) {
 	
 	if(this.tileset !== undefined) {
 		for(var i=0; i<this.tileset.getZLayers().length; i++) {
-			for(var j=0; j<this.scene_objects.length; j++) if(this.scene_objects[j].z < this.tileset.getZLayers()[i]) this.scene_objects[j].draw({context:context});
+			for(var j=0; j<this.scene_objects.length; j++) if(this.scene_objects[j].z < this.tileset.getZLayers()[i]) this.scene_objects[j].draw({context:context,debug:this.debug});
 			this.tileset.drawLayer({zIndex:this.tileset.getZLayers()[i],context:context,width:this.width,height:this.height});
 		}
-		for(var j=0; j<this.scene_objects.length; j++) if(this.scene_objects[j].z >= this.tileset.getZLayers()[this.tileset.getZLayers().length-1]) this.scene_objects[j].draw({context:context});
+		for(var j=0; j<this.scene_objects.length; j++) if(this.scene_objects[j].z >= this.tileset.getZLayers()[this.tileset.getZLayers().length-1]) this.scene_objects[j].draw({context:context,debug:this.debug});
 	} else {
 		for(var i=0; i<this.scene_objects.length; i++) {
-			this.scene_objects[i].draw({context:context});
+			this.scene_objects[i].draw({context:context,debug:this.debug});
 		}
 	}
 }
