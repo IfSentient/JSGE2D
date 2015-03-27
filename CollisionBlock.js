@@ -2,6 +2,7 @@ var CollisionBlock = function(args) {
 	this.width = (args.width !== undefined)? args.width : 0;
 	this.height = (args.height !== undefined)? args.height : 0;
 	this.bits = [];
+	this.image_data = undefined;
 	
 	var collision_array = args.matrix;
 	if(collision_array === undefined) collision_array = [[1]];
@@ -30,13 +31,17 @@ var CollisionBlock = function(args) {
 		}
 	}
 	
+	collision_array = pixels.slice(0);
+	
 	if(this.height > collision_array.length) {
 		var clone = this.height % collision_array.length;
 		var cloneindex = Math.floor(collision_array.length / 2) - 1;
 		var multiply = Math.floor(this.height / collision_array.length);
 		var cloned = false;
 		for(var i=0; i<collision_array.length; i++) {
-			for(var j=0; j<multiply-1+(i == cloneindex? clone : 0); j++) pixels.splice((i*multiply)+(cloned? clone : 0),0,pixels[i*multiply]);
+			for(var j=0; j<multiply-1+(i == cloneindex? clone : 0); j++)  { 
+				pixels.splice((i*multiply)+(cloned? clone : 0),0,collision_array[i]);
+			}
 		}
 	}
 	
@@ -46,8 +51,8 @@ var CollisionBlock = function(args) {
 		for(var j=0; j<len; j++) {
 			this.bits[i][j] = 0;
 			for(var k=0; k<32; k++) {
-				if(pixels[i][k] === undefined && j == len-1) break;
-				this.bits[i][j] += pixels[i][k] == 0? 0 : Math.pow(2,32-k-1);
+				if(pixels[i][(j*32)+k] === undefined && j == len-1) break;
+				this.bits[i][j] += pixels[i][(j*32)+k] == 0? 0 : Math.pow(2,32-k-1);
 			}
 		}
 	}
@@ -113,4 +118,47 @@ CollisionBlock.prototype.isOverlapping = function(args) {
 		}
 	}
 	return false;
+}
+
+CollisionBlock.prototype.draw = function(args) {
+	/* This should never be used outside of debugging. */
+	if(args === undefined) return;
+	var context = args.context;
+	var startX = (args.x !== undefined)? args.x : 0;
+	var startY = (args.y !== undefined)? args.y : 0;
+	var red = (args.red !== undefined)? args.red : 255;
+	var green = (args.green !== undefined)? args.green : 0;
+	var blue = (args.blue !== undefined)? args.blue : 0;
+	var alpha = (args.alpha !== undefined)? args.alpha : 128;
+	if(context === undefined) return;
+	if(this.image_data === undefined) {
+		this.image_data = context.createImageData(this.width,this.height);
+		
+		for(var i=0; i<this.bits.length; i++) {
+			for(var j=0; j<this.bits[i].length; j++) {
+				for(var k=0; k<32; k++) {
+					if(this.bits[i][j] & Math.pow(2,31-k)) {
+						//console.log('here!');
+						this.image_data.data[(i*this.width*4) + (j*32*4) + (k*4) ] = red;
+						this.image_data.data[(i*this.width*4) + (j*32*4) + (k*4) + 1] = green;
+						this.image_data.data[(i*this.width*4) + (j*32*4) + (k*4) + 2] = blue;
+						this.image_data.data[(i*this.width*4) + (j*32*4) + (k*4) + 3] = alpha;
+					}
+					else
+					{
+						this.image_data.data[(i*this.width*4) + (j*32*4) + (k*4) + 3] = 0;
+					}
+				}
+			}
+		}
+	}
+	if(this.alt_canvas === undefined) {
+		 this.alt_canvas = document.createElement("canvas");
+       this.alt_canvas.width = this.width;
+       this.alt_canvas.height = this.height;
+       var ctx = this.alt_canvas.getContext("2d");
+       ctx.putImageData(this.image_data,0,0);
+	}
+	//context.putImageData(this.image_data,startX,startY);
+	context.drawImage(this.alt_canvas,startX,startY);
 }
