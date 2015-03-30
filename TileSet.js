@@ -56,6 +56,9 @@ TileSet.prototype.drawLayer = function(args) {
 	var draw_x = (args.drawX !== undefined)? args.drawX : 0;
 	var draw_y = (args.drawY !== undefined)? args.drawY : 0;
 	
+	scrWidth -= this.tile_size;
+	scrHeight -= this.tile_size;
+	
 	var idx = -1;
 	for(var i=0; i<this.layer_z.length; i++) { if(this.layer_z[i] == z_index) idx = i; }
 	if(idx == -1 || this.layers[idx] === undefined) return;
@@ -71,13 +74,19 @@ TileSet.prototype.drawLayer = function(args) {
 				if(tile >= 0) {
 					var tile_row = (tile / this.tiles_in_image) | 0;
 					var tile_col = (tile % this.tiles_in_image) | 0;
-					var tile_width = ((c*this.tile_size)-startX > scrWidth)? this.tile_size - (((c*this.tile_size)-startX) - scrWidth) : this.tile_size;
-					var tile_height = this.tile_size;
-					var tile_draw_x = (c * this.tile_size)-startX+draw_x;
-					var tile_draw_y = (r * this.tile_size)-startY+draw_y;
-					if(tile_width <= 0) continue;
+					/* If this tile's normal width would make it go past our scrWidth, make the width smaller. Otherwise, if we're going to draw this tile at a negative x, change the width of the tile as well. If neither case is true, just make it the tile size. */
+					var tile_width = ((c*this.tile_size)-startX > scrWidth)? this.tile_size - (((c*this.tile_size)-startX) - scrWidth) : ((c*this.tile_size)-startX < 0)? (c*this.tile_size)-startX+this.tile_size : this.tile_size;
+					/* If this tile's normal height would make it go past our scrHeight, make the height smaller. Otherwise, if we're going to draw this tile at a negative y, change the height of the tile as well. If neither case is true, just make it the tile size. */
+					var tile_height = ((r*this.tile_size)-startY > scrHeight)? this.tile_size - (((r*this.tile_size)-startY) - scrHeight) : ((r*this.tile_size)-startY < 0)? (r*this.tile_size)-startY+this.tile_size : this.tile_size;
+					if(tile_width <= 0 || tile_height <= 0) continue; /* We really don't need to keep going */
+					/* Figure out the draw coords. If we were going to draw it at a negative point, make that coord 0 (+draw_x) */
+					var tile_draw_x = ((c*this.tile_size)-startX < 0)? 0+draw_x : (c * this.tile_size)-startX+draw_x;
+					var tile_draw_y = ((r*this.tile_size)-startY < 0)? 0+draw_y : (r * this.tile_size)-startY+draw_y;
+					/* These are the coords of the tile on the tileset image. If we were going to start drawing at a negative point, we need to chop off a bit of the front of the tile */
+					var tile_x = (tile_col * (this.tile_size + this.margin)) + (((c*this.tile_size)-startX < 0)? this.tile_size - tile_width : 0);
+					var tile_y = (tile_row * (this.tile_size + this.margin)) + (((r*this.tile_size)-startY < 0)? this.tile_size - tile_height : 0);
 					
-					context.drawImage(this.image, (tile_col * (this.tile_size + this.margin)), (tile_row * (this.tile_size + this.margin)), tile_width, tile_height, tile_draw_x, tile_draw_y, tile_width, tile_height);
+					context.drawImage(this.image, tile_x, tile_y, tile_width, tile_height, tile_draw_x, tile_draw_y, tile_width, tile_height);
 			}
 		}
 	}

@@ -1,11 +1,18 @@
 var TileObject = SceneObject.extend(function(args) {
 	if(args === undefined) args = {};
 	SceneObject.prototype.constructor.call(this,args);
-	this.collision_block = args.collisionBlock;
+	this.setCollisionBlock(args.collisionBlock);
 	this.solid = true;
 });
 
 TileObject.prototype.getCollisionBlock = function() { return this.collision_block; }
+
+TileObject.prototype.setCollisionBlock = function(cb) {
+	if(!(cb instanceof CollisionBlock)) return;
+	this.collision_block = cb;
+	this.width = cb.width;
+	this.height = cb.height;
+}
 
 TileObject.prototype.draw = function(args) {
 	var context = args.context;

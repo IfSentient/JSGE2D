@@ -10,6 +10,10 @@ var Scene = function(args) {
 	this.debug = false;
 };
 
+Scene.prototype.setTileset = function(ts) {
+	if(ts instanceof TileSet) this.tileset = ts;
+}
+
 Scene.prototype.addSceneObject = function(sceneObject) {
 	if(!(sceneObject instanceof SceneObject)) return;
 	var inserted = false;
@@ -56,20 +60,29 @@ Scene.prototype.draw = function(args) {
 	for(var i=0; i<this.scene_viewports.length; i++) {
 		var xoff = this.scene_viewports[i].x;
 		var yoff = this.scene_viewports[i].y;
-		var tswidth = this.scene_viewports[i].width;
-		var tsheight = this.scene_viewports[i].height;
+		var vwidth = this.scene_viewports[i].width;
+		var vheight = this.scene_viewports[i].height;
 		var dx = this.scene_viewports[i].draw_x;
 		var dy = this.scene_viewports[i].draw_y;
+		if(this.debug) { /* Debugger for drawing a border around the viewport. */
+			context.beginPath();
+			context.rect(dx,dy,vwidth,vheight);
+			context.stroke();
+		}
 		if(this.tileset !== undefined) {
 			for(var i=0; i<this.tileset.getZLayers().length; i++) {
 				for(var j=0; j<this.scene_objects.length; j++) if(this.scene_objects[j].z < this.tileset.getZLayers()[i]) { 
 					/* TODO: only draw objects within the viewport */
+					var so = this.scene_objects[j];
+					if(so.x + so.width < xoff || so.x > xoff+vwidth || so.y + so.height < yoff || so.y > yoff+vheight) continue;
 					this.scene_objects[j].draw({context:context,xOffset:xoff-dx,yOffset:yoff-dy,debug:this.debug});
 				}
-				this.tileset.drawLayer({zIndex:this.tileset.getZLayers()[i],context:context,width:tswidth,height:tsheight,startX:xoff,startY:yoff,drawX:dx,drawY:dy});
+				this.tileset.drawLayer({zIndex:this.tileset.getZLayers()[i],context:context,width:vwidth,height:vheight,startX:xoff,startY:yoff,drawX:dx,drawY:dy});
 			}
 			for(var j=0; j<this.scene_objects.length; j++) {
 				/* TODO: only draw objects within the viewport */
+					var so = this.scene_objects[j];
+					if(so.x + so.width < xoff || so.x > xoff+vwidth || so.y + so.height < yoff || so.y > yoff+vheight) continue;
 				if(this.scene_objects[j].z >= this.tileset.getZLayers()[this.tileset.getZLayers().length-1]) 
 					this.scene_objects[j].draw({context:context,xOffset:xoff-dx,yOffset:yoff-dy,debug:this.debug});
 			}
