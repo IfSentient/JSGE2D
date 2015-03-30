@@ -60,6 +60,6 @@ Actor.prototype.draw = function(args) {
 	if(args.debug) {
 		this.collision_block.draw({context:context,x:this.x-x_offset,y:this.y-y_offset});
 		context.fillStyle = '#00ff00';
-		context.fillText(this.current_state,this.x+x_offset,this.y+y_offset);
+		context.fillText(this.current_state,this.x-x_offset,this.y-y_offset);
 	}
 }

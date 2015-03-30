@@ -15,6 +15,7 @@
 		<script type="text/javascript" src="Controller.js"></script>
 		<script type="text/javascript" src="InputController.js"></script>
 		<script type="text/javascript" src="Actor.js"></script>
+		<script type="text/javascript" src="Viewport.js"></script>
 	</head>
 	<body style="margin: 0px; padding: 0px; scrolling: none;">
 		<canvas id="canvas" width="500" height="500"></canvas>
@@ -266,6 +267,35 @@
 			var oso = new OffscreenObserver();
 			oso.registerObject(a);
 			scene.addObserver(oso);
+			
+			var CatchUpViewport = Viewport.extend();
+			CatchUpViewport.update = function(args) {
+				var vpx = this.x;
+				Viewport.prototype.update.call(this,args);
+				if(vpx == this.x && this.target !== undefined) {
+					var x_mid = Math.floor(target.x + (this.target.width / 2)) + Math.floor(this.width / 2);
+					var y_mid = Math.floor(target.y + (this.target.height / 2));
+					if(this.x > x_mid) {
+						this.x -= 5;
+						if(this.x < x_mid) this.x = x_mid;
+					}
+					else if(this.x < x_mid) {
+						this.x += 5;
+						if(this.x > x_mid) this.x = x_mid;
+					}
+				}
+			}
+			
+			var vp = new CatchUpViewport({
+				width: 300,
+				height: 200,
+				//xBuffer: 20,
+				drawX: 500,
+				target: a
+			});
+			vp.center();
+			
+			scene.addViewport(vp);
 			
 			function draw() {
 				scene.update({ms:33});

@@ -52,6 +52,8 @@ TileSet.prototype.drawLayer = function(args) {
 	var startY = (args.startY !== undefined)? args.startY : 0;
 	var scrWidth = (args.width !== undefined)? args.width : this.rows * this.tile_size;
 	var scrHeight = (args.height !== undefined)? args.height : this.cols * this.tile_size;
+	var draw_x = (args.drawX !== undefined)? args.drawX : 0;
+	var draw_y = (args.drawY !== undefined)? args.drawY : 0;
 	
 	var idx = -1;
 	for(var i=0; i<this.layer_z.length; i++) { if(this.layer_z[i] == z_index) idx = i; }
@@ -60,15 +62,21 @@ TileSet.prototype.drawLayer = function(args) {
 	startY = Math.floor(startY);
 	startX = Math.floor(startX);
 	for(var r=0; r<this.rows; r++) {
-		if((r*this.tile_size)-startY < -1*this.tile_size || (r*this.tile_size)-startY > scrHeight) continue;
+		if((r*this.tile_size)-startY < -1*this.tile_size || (r*this.tile_size)-startY > scrHeight + this.tile_size) continue;
 		for(var c=0; c<this.cols; c++) {
-			if((c*this.tile_size)-startX < -1*this.tile_size || (c*this.tile_size)-startX > scrWidth) continue;
+			if((c*this.tile_size)-startX < -1*this.tile_size || (c*this.tile_size)-startX > scrWidth + this.tile_size) continue;
 				var tile = -1;
 				if(layer.length > r && layer[r].length > c) { tile = layer[r][c]; }
 				if(tile >= 0) {
 					var tile_row = (tile / this.tiles_in_image) | 0;
 					var tile_col = (tile % this.tiles_in_image) | 0;
-					context.drawImage(this.image, (tile_col * this.tile_size), (tile_row * this.tile_size), this.tile_size, this.tile_size, (c * this.tile_size)-startX, (r * this.tile_size)-startY, this.tile_size, this.tile_size);
+					var tile_width = ((c*this.tile_size)-startX > scrWidth)? this.tile_size - (((c*this.tile_size)-startX) - scrWidth) : this.tile_size;
+					var tile_height = this.tile_size;
+					var tile_draw_x = (c * this.tile_size)-startX+draw_x;
+					var tile_draw_y = (r * this.tile_size)-startY+draw_y;
+					if(tile_width <= 0) continue;
+					
+					context.drawImage(this.image, (tile_col * this.tile_size), (tile_row * this.tile_size), tile_width, tile_height, tile_draw_x, tile_draw_y, tile_width, tile_height);
 			}
 		}
 	}

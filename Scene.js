@@ -5,6 +5,7 @@ var Scene = function(args) {
 	if(!(this.tileset instanceof TileSet)) this.tileset = undefined;
 	this.scene_objects = [];
 	this.scene_observers = [];
+	this.scene_viewports = [];
 	this.bg_color = '#ffffff';
 	this.debug = false;
 };
@@ -23,6 +24,11 @@ Scene.prototype.addObserver = function(sceneObserver) {
 	this.scene_observers[this.scene_observers.length] = sceneObserver;
 }
 
+Scene.prototype.addViewport = function(viewport) {
+	if(!(viewport instanceof Viewport)) return;
+	this.scene_viewports[this.scene_viewports.length] = viewport;
+}
+
 Scene.prototype.setBackgroundColor = function(color) {
 	this.bg_color = color;
 }
@@ -34,6 +40,9 @@ Scene.prototype.update = function(args) {
 	for(var i=0; i<this.scene_observers.length; i++) {
 		this.scene_observers[i].update();
 	}
+	for(var i=0; i<this.scene_viewports.length; i++) {
+		this.scene_viewports[i].update();
+	}
 }
 
 Scene.prototype.draw = function(args) {
@@ -44,15 +53,31 @@ Scene.prototype.draw = function(args) {
 	context.fillStyle = this.bg_color;
 	context.fillRect(0, 0, W, H);
 	
-	if(this.tileset !== undefined) {
-		for(var i=0; i<this.tileset.getZLayers().length; i++) {
-			for(var j=0; j<this.scene_objects.length; j++) if(this.scene_objects[j].z < this.tileset.getZLayers()[i]) this.scene_objects[j].draw({context:context,debug:this.debug});
-			this.tileset.drawLayer({zIndex:this.tileset.getZLayers()[i],context:context,width:this.width,height:this.height});
-		}
-		for(var j=0; j<this.scene_objects.length; j++) if(this.scene_objects[j].z >= this.tileset.getZLayers()[this.tileset.getZLayers().length-1]) this.scene_objects[j].draw({context:context,debug:this.debug});
-	} else {
-		for(var i=0; i<this.scene_objects.length; i++) {
-			this.scene_objects[i].draw({context:context,debug:this.debug});
+	for(var i=0; i<this.scene_viewports.length; i++) {
+		var xoff = this.scene_viewports[i].x;
+		var yoff = this.scene_viewports[i].y;
+		var tswidth = this.scene_viewports[i].width;
+		var tsheight = this.scene_viewports[i].height;
+		var dx = this.scene_viewports[i].draw_x;
+		var dy = this.scene_viewports[i].draw_y;
+		if(this.tileset !== undefined) {
+			for(var i=0; i<this.tileset.getZLayers().length; i++) {
+				for(var j=0; j<this.scene_objects.length; j++) if(this.scene_objects[j].z < this.tileset.getZLayers()[i]) { 
+					/* TODO: only draw objects within the viewport */
+					this.scene_objects[j].draw({context:context,xOffset:xoff-dx,yOffset:yoff-dy,debug:this.debug});
+				}
+				this.tileset.drawLayer({zIndex:this.tileset.getZLayers()[i],context:context,width:tswidth,height:tsheight,startX:xoff,startY:yoff,drawX:dx,drawY:dy});
+			}
+			for(var j=0; j<this.scene_objects.length; j++) {
+				/* TODO: only draw objects within the viewport */
+				if(this.scene_objects[j].z >= this.tileset.getZLayers()[this.tileset.getZLayers().length-1]) 
+					this.scene_objects[j].draw({context:context,xOffset:xoff-dx,yOffset:yoff-dy,debug:this.debug});
+			}
+		} else {
+			for(var i=0; i<this.scene_objects.length; i++) {
+				/* TODO: only draw objects within the viewport */
+				this.scene_objects[i].draw({context:context,xOffset:xoff,yOffset:yoff,debug:this.debug});
+			}
 		}
 	}
 }

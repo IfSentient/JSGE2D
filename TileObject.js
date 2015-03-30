@@ -10,9 +10,9 @@ TileObject.prototype.getCollisionBlock = function() { return this.collision_bloc
 TileObject.prototype.draw = function(args) {
 	var context = args.context;
 	var debug = args.debug;
+	var x_offset = (args.xOffset !== undefined)? args.xOffset : 0;
+	var y_offset = (args.yOffset !== undefined)? args.yOffset : 0;
 	if(debug) {
-		//context.fillStyle = "#ff0000";
-		//context.fillRect(this.x, this.y, this.collision_block.width, this.collision_block.height);
-		this.collision_block.draw({context:context,x:this.x,y:this.y,red:255,alpha:180});
+		this.collision_block.draw({context:context,x:this.x-x_offset,y:this.y-y_offset,red:255,alpha:180});
 	}
 }
