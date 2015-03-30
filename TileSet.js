@@ -6,6 +6,7 @@ var TileSet = function(args) {
 	this.rows = (args.rows !== undefined)? args.rows : 0;	/* The number of tiles in a row of our background */
 	this.cols = (args.cols !== undefined)? args.cols : 0; /* The number of tiles in a column of our background */
 	this.tiles_in_image = (args.tilesPerRow !== undefined)? args.tilesPerRow : 16; /* The number of tiles per row in the TileSet image */
+	this.margin = (args.margin !== undefined) ? args.margin : 0;
 	
 	this.layers = [];
 	this.layer_z = [];
@@ -76,7 +77,7 @@ TileSet.prototype.drawLayer = function(args) {
 					var tile_draw_y = (r * this.tile_size)-startY+draw_y;
 					if(tile_width <= 0) continue;
 					
-					context.drawImage(this.image, (tile_col * this.tile_size), (tile_row * this.tile_size), tile_width, tile_height, tile_draw_x, tile_draw_y, tile_width, tile_height);
+					context.drawImage(this.image, (tile_col * (this.tile_size + this.margin)), (tile_row * (this.tile_size + this.margin)), tile_width, tile_height, tile_draw_x, tile_draw_y, tile_width, tile_height);
 			}
 		}
 	}

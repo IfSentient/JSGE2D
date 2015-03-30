@@ -1,0 +1,235 @@
+<html>
+	<head>
+		<title>Test</title>
+		<script type="text/javascript" src="Common.js"></script>
+		<script type="text/javascript" src="Sprite.js"></script>
+		<script type="text/javascript" src="TileSet.js"></script>
+		<script type="text/javascript" src="CollisionBlock.js"></script>
+		<script type="text/javascript" src="SceneObject.js"></script>
+		<script type="text/javascript" src="SceneObserver.js"></script>
+		<script type="text/javascript" src="CollisionObserver.js"></script>
+		<script type="text/javascript" src="InputHandler.js"></script>
+		<script type="text/javascript" src="Scene.js"></script>
+		<script type="text/javascript" src="PhysicsObject.js"></script>
+		<script type="text/javascript" src="TileObject.js"></script>
+		<script type="text/javascript" src="Controller.js"></script>
+		<script type="text/javascript" src="InputController.js"></script>
+		<script type="text/javascript" src="Actor.js"></script>
+	</head>
+	<body style="margin: 0px; padding: 0px; scrolling: none;">
+		<canvas id="canvas" width="1600" height="1600"></canvas>
+		<script type="text/javascript" >
+			//Initializing the canvas
+			var canvas = document.getElementById("canvas");
+			var context = canvas.getContext("2d");
+			
+			//Canvas dimensions
+			var W = window.innerWidth; 
+			var H = window.innerHeight;
+			
+			canvas.style.width = W;
+			canvas.style.height = H;
+			context.canvas.width = W;
+			context.canvas.height = H;
+			
+			var spr = new Sprite({
+				src:'Test Resources/triceratops.png',
+			});
+			spr.addAnimation({
+				name : 'WalkLeft',
+				startX : 0,
+				startY : 0,
+				width : 78,
+				height : 40,
+				padding : 0,
+				frames : 8,
+				speed : 3
+			});
+			spr.addAnimation({
+				name : 'WalkRight',
+				startX : 0,
+				startY : 40,
+				width : 78,
+				height : 40,
+				padding : 0,
+				frames : 8,
+				speed : 3
+			});
+			spr.setState({state : 'WalkLeft'});
+			spr.pauseAnimation();
+			
+			var c = new CollisionBlock({
+				width: 31,
+				height: 20,
+				matrix: [[0],[1]]
+			});
+			
+			var a = new Actor({
+				x: 10,
+				y: 70,
+				z: 0,
+				sprite: spr,
+				collisionBlock: c
+			});
+			
+			a.addState({
+				name: 'StartWalkLeft',
+				spriteState: {state:'WalkLeft'},
+				xAcceleration: -50
+			});
+			a.addState({
+				name: 'StartWalkRight',
+				spriteState: {state:'WalkRight'},
+				xAcceleration: 50
+			});
+			a.addState({
+				name: 'WalkLeft',
+				spriteState: {state:'WalkLeft'},
+			});
+			a.addState({
+				name: 'WalkRight',
+				spriteState: {state:'WalkRight'},
+			});
+			a.addState({
+				name: 'StopWalkLeft',
+				xAcceleration: 50
+			});
+			a.addState({
+				name: 'StopWalkRight',
+				xAcceleration: -50
+			});
+			a.addState({
+				name: 'Still',
+				spritePause: true,
+				xVelocity: 0
+			});
+			a.setState('Still');
+			
+			var ts = new TileSet({
+				src: 'Test Resources/roguelike-pack/Spritesheet/roguelikeSheet_transparent.png',
+				tileWidth: 16,
+				tilesPerRow: 57,
+				rows: 100,
+				cols: 100,
+				margin: 1
+			});
+			
+			var trees = new TileSet({
+				src: 'Test Resources/roguelike-pack/Spritesheet/roguelikeSheet_transparent.png',
+				tileWidth: 16,
+				tilesPerRow: 57,
+				rows: 100,
+				cols: 100,
+				margin: 1
+			});
+			
+			var grass = [
+				[5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5],
+				[5,5,2,3,4,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5],
+				[5,5,(57*1)+2,(57*1)+3,(57*1)+4,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5],
+				[5,5,(57*2)+2,(57*2)+3,(57*2)+4,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5],
+				[5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5],
+				[5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5],
+				[5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5],
+				[5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5],
+				[5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5],
+				[5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5],
+				[5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5],
+				[5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5],
+				[5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5],
+				[5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5],
+				[5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5],
+				[5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5],
+				[5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5],
+				[5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5],
+				[5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5],
+				[5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5],
+			];
+			
+			ts.setLayer({
+				zIndex: 0,
+				layer:grass
+			});
+			
+			var scene = new Scene({
+				width: W,
+				height: H,
+				tileset: ts
+			});
+			
+			scene.addSceneObject(a);
+			
+			//the function for the update method of our InputController is the same regardless of input. 
+			//Really, one should extend the InputController class (or modify it) with their own movement state code in the update() function.
+			var movementStateFunction = function(args) {
+				var a = args.object;
+				if(args.stateObject.walking_left) {
+					if(a.getState() !== 'WalkLeft' && a.getState() !== 'StartWalkLeft') a.setState('StartWalkLeft');
+					if(a.getState() === 'StartWalkLeft' && a.x_vel < -20) a.setState('WalkLeft');
+				} else if(args.stateObject.walking_right) {
+					if(a.getState() !== 'WalkRight' && a.getState() !== 'StartWalkRight') a.setState('StartWalkRight');
+					if(a.getState() === 'StartWalkRight' && a.x_vel > 20) a.setState('WalkRight');
+				} else {
+					if(a.getState() === 'WalkLeft' || a.getState() === 'StartWalkLeft') a.setState('StopWalkLeft');
+					if(a.getState() === 'WalkRight' || a.getState() === 'StartWalkRight') a.setState('StopWalkRight');
+					if(a.getState() === 'StopWalkLeft' && a.x_vel >= 0) { a.x_vel = 0; a.setState('Still'); }
+					if(a.getState() === 'StopWalkRight' && a.x_vel <= 0) { a.x_vel = 0; a.setState('Still'); }
+				}
+			}
+			
+			var ih = new InputHandler();
+			var ic = new InputController();
+			ih.registerController(ic);
+			a.addController(ic);
+			ic.addInputBinding({
+				type: 'keydown',
+				keyCode: 65,
+				action: function(args) {
+					args.stateObject.walking_left = true;
+					args.stateObject.update = movementStateFunction;
+				}
+			});
+			ic.addInputBinding({
+				type: 'keydown',
+				keyCode: 68,
+				action: function(args) {
+					args.stateObject.walking_right = true;
+					args.stateObject.update = movementStateFunction;
+				}
+			});
+			ic.addInputBinding({
+				type: 'keyup',
+				keyCode: 65,
+				action: function(args) {
+					args.stateObject.walking_left = false;
+					args.stateObject.update = movementStateFunction;
+				}
+			});
+			ic.addInputBinding({
+				type: 'keyup',
+				keyCode: 68,
+				action: function(args) {
+					args.stateObject.walking_right = false;
+					args.stateObject.update = movementStateFunction;
+				}
+			});
+			
+			
+			function draw() {
+				scene.update({ms:33});
+				scene.draw({context:context});
+			}
+			
+			//draw();
+			window.setInterval(draw, 33);
+			
+			//Never do this. This is just because Ihaven't finished implementing this behaviour at this point
+			document.addEventListener('keydown', function(evt) {
+				 ih.keyDown(evt);
+			});
+			document.addEventListener('keyup', function(evt) {
+				ih.keyUp(evt); 
+			});
+		</script>
+	</body>
+</html>
