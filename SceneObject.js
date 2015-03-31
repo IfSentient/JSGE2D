@@ -3,6 +3,7 @@ var SceneObject = function(args) {
 	this.x = (args.x !== undefined)? args.x : 0;
 	this.y = (args.y !== undefined)? args.y : 0;
 	this.z = (args.z !== undefined)? args.z : 0;
+	this.name = (args.name !== undefined)? args.name : 'SceneObject'+(~~(Math.random() * 1000000000));
 	this.width = 0;
 	this.height = 0;
 	this.solid = false;
