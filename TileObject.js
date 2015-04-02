@@ -2,7 +2,8 @@ var TileObject = SceneObject.extend(function(args) {
 	if(args === undefined) args = {};
 	SceneObject.prototype.constructor.call(this,args);
 	this.setCollisionBlock(args.collisionBlock);
-	this.solid = true;
+	this.solid = (args.solid !== undefined)? args.solid : true;
+	this.name = (args.name !== undefined)? args.name : 'TileObject'+(~~(Math.random() * 1000000000));
 });
 
 TileObject.prototype.getCollisionBlock = function() { return this.collision_block; }
